@@ -164,6 +164,7 @@ def export_report(
     visual_name: Optional[str] = None,
     report_filter: Optional[str] = None,
     workspace: Optional[str] = None,
+    report_parameters: Optional[dict] = None,
 ):
     """
     Exports a Power BI report to a file in your lakehouse.
@@ -189,6 +190,10 @@ def export_report(
         The Fabric workspace name.
         Defaults to None which resolves to the workspace of the attached lakehouse
         or if no lakehouse attached, resolves to the workspace of the notebook.
+    paginated_report_parameters : Optional[dict] = None
+        Paginated Report only: Allows to pass paramaters to paginated reports when exporting them.
+        e.g. {"area": "europe", "year": "2024"}
+        
     """
 
     # https://learn.microsoft.com/rest/api/power-bi/reports/export-to-file-in-group
@@ -302,16 +307,17 @@ def export_report(
     dfVisual = list_report_visuals(report=report, workspace=workspace)
     dfPage = list_report_pages(report=report, workspace=workspace)
 
-    if (
-        export_format in ["BMP", "EMF", "GIF", "JPEG", "TIFF"]
-        and reportType == "PaginatedReport"
-    ):
+    if reportType == "PaginatedReport":
         request_body = {
-            "format": "IMAGE",
             "paginatedReportConfiguration": {
                 "formatSettings": {"OutputFormat": export_format.lower()}
-            },
+                },
         }
+        if export_format in ["BMP", "EMF", "GIF", "JPEG", "TIFF"]:
+            request_body["format"] = "IMAGE"
+        if paginated_report_parameters is not None:
+            request_body["paginatedReportConfiguration"]["parameterValues"] = paginated_report_parameters
+
     elif bookmark_name is None and page_name is None and visual_name is None:
         request_body = {"format": export_format}
     elif bookmark_name is not None:
