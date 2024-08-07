@@ -164,7 +164,7 @@ def export_report(
     visual_name: Optional[str] = None,
     report_filter: Optional[str] = None,
     workspace: Optional[str] = None,
-    report_parameters: Optional[dict] = None,
+    paginated_report_parameters: Optional[dict] = None,
 ):
     """
     Exports a Power BI report to a file in your lakehouse.
